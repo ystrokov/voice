@@ -41,7 +41,7 @@ chrome_options.add_argument("--use-fake-ui-for-media-stream")
 chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
 
 # Устройство для записи аудио
-AUDIO_DEVICE_NAME = 'virtual_audio_capture'  # Виртуальная звуковая карта
+AUDIO_DEVICE_NAME = 'hw:0,0'  # Используем Loopback PCM
 
 # Функция для начала записи аудио
 def start_audio_recording(output_file):
@@ -64,6 +64,9 @@ def stop_audio_recording(process):
     if process and process.poll() is None:
         try:
             process.terminate()
+            stdout, stderr = process.communicate()
+            print(f"🔍 Лог FFmpeg STDOUT:\n{stdout.decode()}")
+            print(f"🔍 Лог FFmpeg STDERR:\n{stderr.decode()}")
             process.wait(timeout=5)
             print("✅ Запись успешно завершена.")
         except Exception as e:
