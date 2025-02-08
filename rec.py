@@ -8,15 +8,15 @@ import subprocess
 import time
 import signal
 import os
-from datetime import datetime
 
 # Настройки
 MEETING_URL = "https://meet.wb.ru/platformPlanning"
 USERNAME = "AutoBot"
-RECORD_DURATION = 25  # Время записи в секундах (30 минут)
+RECORD_DURATION = 1800  # Время записи в секундах (30 минут)
 
 # Путь для сохранения аудио
 OUTPUT_DIR = "/.voice"
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "meeting_audio.mp3")
 
 # Проверка наличия директории для сохранения
 if not os.path.exists(OUTPUT_DIR):
@@ -39,30 +39,29 @@ chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--window-size=1920,1080")
 chrome_options.add_argument("--use-fake-ui-for-media-stream")
 chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
+chrome_options.add_argument("--alsa-output-device=hw:0,0")  # Указываем устройство вывода звука
 
 # Устройство для записи аудио
-AUDIO_DEVICE_NAME = 'hw:0,1'  # Изменено на другое устройство
+AUDIO_DEVICE_NAME = 'hw:0,0'  # Использование устройства hw:0,0
 
 # Функция для начала записи аудио
 def start_audio_recording():
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(OUTPUT_DIR, f"meeting_audio_{timestamp}.mp3")
-    print(f"🎙️ Инициализация записи аудио... Файл будет сохранён в {output_file}")
+    print(f"🎙️ Инициализация записи аудио... Файл будет сохранён в {OUTPUT_FILE}")
     try:
         process = subprocess.Popen([
             FFMPEG_PATH, '-f', 'alsa', '-i', AUDIO_DEVICE_NAME, '-t', str(RECORD_DURATION),
-            '-af', 'volumedetect', output_file
+            OUTPUT_FILE
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return process, output_file
+        return process
     except FileNotFoundError:
         print("❌ FFmpeg не найден. Проверьте путь к файлу.")
-        return None, None
+        return None
     except Exception as e:
         print(f"❌ Ошибка при запуске записи: {e}")
-        return None, None
+        return None
 
 # Функция для остановки записи аудио
-def stop_audio_recording(process, output_file):
+def stop_audio_recording(process):
     print("🛑 Остановка записи аудио...")
     if process and process.poll() is None:
         try:
@@ -70,10 +69,10 @@ def stop_audio_recording(process, output_file):
             stdout, stderr = process.communicate()
             print(f"🔍 Лог FFmpeg STDOUT:\n{stdout.decode()}")
             print(f"🔍 Лог FFmpeg STDERR:\n{stderr.decode()}")
-            if os.path.exists(output_file):
-                print(f"✅ Файл успешно сохранён: {output_file}")
+            if os.path.exists(OUTPUT_FILE):
+                print(f"✅ Файл успешно сохранён: {OUTPUT_FILE}")
             else:
-                print(f"❌ Файл не был сохранён: {output_file}")
+                print(f"❌ Файл не был сохранён: {OUTPUT_FILE}")
             process.wait(timeout=5)
             print("✅ Запись успешно завершена.")
         except Exception as e:
@@ -106,13 +105,13 @@ def join_and_record(meeting_url, username):
 
         # Ожидание подключения к встрече
         print("⏳ Ожидание подключения к встрече...")
-        time.sleep(5)  # Время на подключение к конференции
+        time.sleep(10)  # Время на подключение к конференции
 
         # Начало записи
-        recording_process, output_file = start_audio_recording()
+        recording_process = start_audio_recording()
         if recording_process:
             time.sleep(RECORD_DURATION)
-            stop_audio_recording(recording_process, output_file)
+            stop_audio_recording(recording_process)
         else:
             print("⚠️ Запись не была начата из-за ошибки.")
 
