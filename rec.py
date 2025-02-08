@@ -13,10 +13,10 @@ from datetime import datetime
 # Настройки
 MEETING_URL = "https://meet.wb.ru/platformPlanning"
 USERNAME = "AutoBot"
-RECORD_DURATION = 20 # Время записи в секундах (30 минут)
+RECORD_DURATION = 25  # Время записи в секундах (30 минут)
 
 # Путь для сохранения аудио
-OUTPUT_DIR = "/home/ubuntu/audio_recoder/voice"
+OUTPUT_DIR = "/.voice"
 
 # Проверка наличия директории для сохранения
 if not os.path.exists(OUTPUT_DIR):
@@ -62,7 +62,7 @@ def start_audio_recording():
         return None, None
 
 # Функция для остановки записи аудио
-def stop_audio_recording(process):
+def stop_audio_recording(process, output_file):
     print("🛑 Остановка записи аудио...")
     if process and process.poll() is None:
         try:
@@ -70,6 +70,10 @@ def stop_audio_recording(process):
             stdout, stderr = process.communicate()
             print(f"🔍 Лог FFmpeg STDOUT:\n{stdout.decode()}")
             print(f"🔍 Лог FFmpeg STDERR:\n{stderr.decode()}")
+            if os.path.exists(output_file):
+                print(f"✅ Файл успешно сохранён: {output_file}")
+            else:
+                print(f"❌ Файл не был сохранён: {output_file}")
             process.wait(timeout=5)
             print("✅ Запись успешно завершена.")
         except Exception as e:
@@ -102,14 +106,13 @@ def join_and_record(meeting_url, username):
 
         # Ожидание подключения к встрече
         print("⏳ Ожидание подключения к встрече...")
-        time.sleep(10)  # Время на подключение к конференции
+        time.sleep(5)  # Время на подключение к конференции
 
         # Начало записи
         recording_process, output_file = start_audio_recording()
         if recording_process:
             time.sleep(RECORD_DURATION)
-            stop_audio_recording(recording_process)
-            print(f"✅ Запись завершена. Файл сохранён как {output_file}")
+            stop_audio_recording(recording_process, output_file)
         else:
             print("⚠️ Запись не была начата из-за ошибки.")
 
