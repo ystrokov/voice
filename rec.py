@@ -12,10 +12,10 @@ import os
 # Настройки
 MEETING_URL = "https://meet.wb.ru/platformPlanning"
 USERNAME = "AutoBot"
-RECORD_DURATION = 1800  # Время записи в секундах (30 минут)
+RECORD_DURATION = 25  # Время записи в секундах (30 минут)
 
 # Путь для сохранения аудио
-OUTPUT_DIR = "/.voice"
+OUTPUT_DIR = ".voice"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "meeting_audio.mp3")
 
 # Проверка наличия директории для сохранения
@@ -23,6 +23,7 @@ if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
 # Пути к Chrome, Chromedriver и FFmpeg
+CHROME_PATH = "/usr/bin/google-chrome"
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 FFMPEG_PATH = "/usr/bin/ffmpeg"  # Путь к ffmpeg
 
@@ -32,14 +33,15 @@ if not os.path.isfile(FFMPEG_PATH):
 
 # Настройка опций для Chrome
 chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--window-size=1920,1080")
-chrome_options.add_argument("--use-fake-ui-for-media-stream")
-chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
-chrome_options.add_argument("--alsa-output-device=hw:0,0")  # Указываем устройство вывода звука
+chrome_options.binary_location = CHROME_PATH
+chrome_options.add_argument("--headless")  # Запуск браузера в фоновом режиме без графического интерфейса
+chrome_options.add_argument("--no-sandbox")  # Отключение песочницы для повышения совместимости
+chrome_options.add_argument("--disable-dev-shm-usage")  # Использование диска вместо /dev/shm для предотвращения ошибок в ограниченной среде
+chrome_options.add_argument("--disable-gpu")  # Отключение использования GPU для рендеринга
+chrome_options.add_argument("--window-size=1920,1080")  # Установка размера окна браузера
+chrome_options.add_argument("--use-fake-ui-for-media-stream")  # Автоматическое разрешение доступа к микрофону и камере
+chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")  # Разрешение автоматического воспроизведения медиа без взаимодействия пользователя
+chrome_options.add_argument("--alsa-output-device=hw:0,0")  # Указание устройства вывода звука на ALSA (для захвата аудио)
 
 # Устройство для записи аудио
 AUDIO_DEVICE_NAME = 'hw:0,0'  # Использование устройства hw:0,0
