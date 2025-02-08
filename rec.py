@@ -15,15 +15,14 @@ USERNAME = "AutoBot"
 RECORD_DURATION = 25  # Время записи в секундах (30 минут)
 
 # Путь для сохранения аудио
-OUTPUT_DIR = ".voice"
+OUTPUT_DIR = "voice"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "meeting_audio.mp3")
 
 # Проверка наличия директории для сохранения
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
-# Пути к Chrome, Chromedriver и FFmpeg
-CHROME_PATH = "/usr/bin/google-chrome"
+# Пути к Chromedriver и FFmpeg
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
 FFMPEG_PATH = "/usr/bin/ffmpeg"  # Путь к ffmpeg
 
@@ -33,7 +32,6 @@ if not os.path.isfile(FFMPEG_PATH):
 
 # Настройка опций для Chrome
 chrome_options = Options()
-chrome_options.binary_location = CHROME_PATH
 chrome_options.add_argument("--headless")  # Запуск браузера в фоновом режиме без графического интерфейса
 chrome_options.add_argument("--no-sandbox")  # Отключение песочницы для повышения совместимости
 chrome_options.add_argument("--disable-dev-shm-usage")  # Использование диска вместо /dev/shm для предотвращения ошибок в ограниченной среде
